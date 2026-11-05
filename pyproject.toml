@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools==84.2.1", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "corpus-font-bundle"
+version = "0.1.0"
+description = "Bounded corpus-specific TrueType subsetting with independent HarfBuzz replay"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Lofrano Tecnologia"}]
+dependencies = ["fonttools==4.68.0", "brotli==1.2.1"]
+
+[project.urls]
+Homepage = "https://lofranotecnologia.com.br"
+Repository = "https://github.com/martinlofranodeoliveira/corpus-font-bundle"
+Issues = "https://github.com/martinlofranodeoliveira/corpus-font-bundle/issues"
+
+[project.scripts]
+corpus-font-bundle = "corpus_font_bundle.__main__:main"
+
+[tool.setuptools]
+packages = ["corpus_font_bundle"]

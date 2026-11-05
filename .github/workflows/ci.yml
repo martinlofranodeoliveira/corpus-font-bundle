@@ -1,0 +1,53 @@
+name: tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  python:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: python:3.13.18-slim-bookworm@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f
+      options: --cpus 2 --memory 1g --pids-limit 256
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Prepare locked runtime and build tooling
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends libharfbuzz-bin=6.0.0+dfsg-3 libharfbuzz0b=6.0.0+dfsg-3 util-linux
+          python -m pip install --only-binary=:all: --require-hashes -r requirements.lock
+          python -m pip install --only-binary=:all: --require-hashes -r requirements-build.lock
+          mkdir -p "$GITHUB_WORKSPACE/build/home"
+          chown -R 1000:1000 "$GITHUB_WORKSPACE"
+          echo "HOME=$GITHUB_WORKSPACE/build/home" >> "$GITHUB_ENV"
+      - name: Verify unprivileged zero-capability identity
+        run: |
+          setpriv --reuid=1000 --regid=1000 --clear-groups --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs sh -eu -c '
+            test "$(id -u)" = 1000
+            test "$(id -G)" = 1000
+            found=0
+            while read -r key value rest; do
+              case "$key" in
+                CapInh:|CapPrm:|CapEff:|CapBnd:|CapAmb:)
+                  test "$value" = 0000000000000000
+                  found=$((found + 1)) ;;
+                NoNewPrivs:)
+                  test "$value" = 1
+                  found=$((found + 1)) ;;
+              esac
+            done < /proc/self/status
+            test "$found" -eq 6
+          '
+      - name: Tests with prepared dependencies
+        env:
+          PIP_NO_INDEX: '1'
+        run: setpriv --reuid=1000 --regid=1000 --clear-groups --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs python -m unittest discover -s tests
+      - name: Separate offline demonstration
+        run: setpriv --reuid=1000 --regid=1000 --clear-groups --bounding-set=-all --inh-caps=-all --ambient-caps=-all --no-new-privs python -m corpus_font_bundle demo --assert

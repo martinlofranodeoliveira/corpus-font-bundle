@@ -1,0 +1,5 @@
+include LICENSE README.md README.pt-BR.md CHANGELOG.md CONTRIBUTING.md SECURITY.md
+include requirements.lock requirements-build.lock
+recursive-include corpus_font_bundle *.py
+recursive-include tests *.py
+recursive-include docs *.md

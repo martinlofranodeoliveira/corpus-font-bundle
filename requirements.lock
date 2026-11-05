@@ -1,0 +1,4 @@
+# Qualified CPython 3.13 Linux x64 runtime artifacts, not a universal wheel lock.
+# Hashes supplied by actual pre-source dependency resolution.
+brotli==1.2.1 --hash=sha256:264fd5b200f6f6170cb551a4b9fcaabf8aa846ddaefe72db4d5f49f9d3743df9
+fonttools==4.68.0 --hash=sha256:08851f7d2b983412f490b73a7c56f17cbda1d4d85d2ad3f857564bf15b5d9475
